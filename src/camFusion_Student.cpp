@@ -154,8 +154,18 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
 
 void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bbBestMatches, DataFrame &prevFrame, DataFrame &currFrame)
 {
-    for(cv::DMatch match : matches) {
-        cout << to_string(match) << endl;
+    // DMatch structure contains 2 keypoints indices : queryIdx and trainIdx which corresponds to the matched kpts found in the previous and the current frame.
+    for(auto match : matches) {
+
+        cv::KeyPoint previousKpt = prevFrame.keypoints[match.queryIdx];
+        cv::KeyPoint currentKpt = currFrame.keypoints[match.trainIdx];
+
+        //Find which bbox in the previous frame contains our matched keypoint
+        for(auto prevBbox : prevFrame.boundingBoxes) {
+            if(prevBbox.roi.contains(previousKpt.pt)) {
+
+            }
+        }
         
     }
 }
