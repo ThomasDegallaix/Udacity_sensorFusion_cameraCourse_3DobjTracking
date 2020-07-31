@@ -8,6 +8,8 @@
 #include "camFusion.hpp"
 #include "dataStructures.h"
 
+#include <set>
+
 using namespace std;
 
 
@@ -154,18 +156,83 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
 
 void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bbBestMatches, DataFrame &prevFrame, DataFrame &currFrame)
 {
+
+    multimap<int, int> mmap{};
+    
     // DMatch structure contains 2 keypoints indices : queryIdx and trainIdx which corresponds to the matched kpts found in the previous and the current frame.
     for(auto match : matches) {
 
         cv::KeyPoint previousKpt = prevFrame.keypoints[match.queryIdx];
         cv::KeyPoint currentKpt = currFrame.keypoints[match.trainIdx];
 
-        //Find which bbox in the previous frame contains our matched keypoint
-        for(auto prevBbox : prevFrame.boundingBoxes) {
-            if(prevBbox.roi.contains(previousKpt.pt)) {
 
+        // If -1 occurs in a pair of bbox ids it means that a kpt has been found in only 1 bbox
+        int previousBboxID = -1;
+        int currentBboxID = -1;
+
+        //Find which bbox in the previous frame contains our matched keypoint
+        for(auto previousBbox : prevFrame.boundingBoxes) {
+            if(previousBbox.roi.contains(previousKpt.pt)) {
+                previousBboxID = previousBbox.boxID;
             }
         }
+
+        //Find which bbox in the current frame contains our matched keypoint
+        for(auto currentBbox : currFrame.boundingBoxes) {
+            if(currentBbox.roi.contains(currentKpt.pt)) {
+                currentBboxID = currentBbox.boxID;
+            }
+        }
+        //TODO: Check if kp matches can be in multiple bboxes
+        mmap.insert({currentBboxID, previousBboxID});
+    }
+
+
+    //For each bboxID in the current frame, count how many occurence of a matched bbox ID in the previous frame we have.
+    for(auto it = currFrame.boundingBoxes.begin(); it != currFrame.boundingBoxes.end(); ++it) {
+
+        //Get the list of all elements for a specific current bbox ID. equal_range return a pair of iterators {beginning of range, end of range}
+        auto rangeCurrBoxID = mmap.equal_range(it->boxID);
+
+        //By copying the multimap in a set we remove duplicate data and therefore get a list of all the unique pair possibilities (potential matches) for a specific boxID
+        set<pair<int,int>> potentialMatches{rangeCurrBoxID.first , rangeCurrBoxID.second};
+        //Remove pairs with value -1 because they correspond to kpt matches which don't belong to a bbox in the previous frame
+        for(auto it = potentialMatches.begin(); it != potentialMatches.end(); ++it) {
+            if(it->second == -1) potentialMatches.erase(it);
+        }
+
+        if(potentialMatches.empty()) {
+            continue;
+        }
+
+        //First corresponds to a potential best match and second to its number of occurences in the multimap
+        set<pair<pair<int,int>, int>> countingResults = {}; //multimap<pair<int,int>,int>???
+        //Count occurences of each potential best match in the multimap
+        for(auto potentialMatch : potentialMatches) {
+
+            size_t counter = count_if(mmap.begin(), mmap.end(), [&potentialMatch](const pair<int,int>& p1) {return p1 == potentialMatch;});
+            auto newCounterResult = make_pair(potentialMatch, counter);
+            countingResults.insert(newCounterResult); // => ZEMKNVOUIREBHERIÀ)JERBJER if same value, keep highest
+
+            
+        }
+
+        //Find the pair with the most occurences
+        auto bestMatch = max_element(countingResults.begin(), countingResults.end(), [] (const pair<pair<int,int>, int>& p1, const pair<pair<int,int>, int>& p2) {return p1.second < p2.second;});
+        cout << "1. Best match " << "{" << bestMatch->first.first << "," << bestMatch->first.second << "} " << bestMatch->second << endl;
+        
+        //Add it to the best matches
+        bbBestMatches.insert(make_pair(bestMatch->first.second, it->boxID));
+        
         
     }
+
+
+
+    
+    //for(auto res : countingResults) cout << "{" << res.first.first << "," << res.first.second << "} " << res.second << endl;
+    for(auto res : bbBestMatches) cout << "Best match {" << res.first << "," << res.second << "} " << endl;
+
+    
+
 }
