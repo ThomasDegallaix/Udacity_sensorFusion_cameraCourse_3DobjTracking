@@ -222,7 +222,7 @@ void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bb
 
         }
 
-        for(auto res : countingResults) cout << "{" << res.first.first << "," << res.first.second << "} " << res.second << endl;
+        //for(auto res : countingResults) cout << "{" << res.first.first << "," << res.first.second << "} " << res.second << endl;
 
         //Find the pair with the most occurences
         auto potentialBestMatch = max_element(countingResults.begin(), countingResults.end(), [] (const pair<pair<int,int>, int>& p1, const pair<pair<int,int>, int>& p2) {return p1.second < p2.second;});

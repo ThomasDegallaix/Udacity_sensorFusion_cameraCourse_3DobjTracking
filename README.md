@@ -41,5 +41,7 @@ In this final project, you will implement the missing parts in the schematic. To
 #### Task : 
 Implement the method "matchBoundingBoxes", which takes as input both the previous and the current data frames and provides as output the ids of the matched regions of interest (i.e. the boxID property). Matches must be the ones with the highest number of keypoint correspondences.
 
+For explanations about how I solved this part, please check commentaries in the code.
 
-```
+[Go to code](https://github.com/ThomasDegallaix/Udacity_sensorFusion_cameraCourse_3DobjTracking/blob/master/src/camFusion_Student.cpp#L157-L255)
+
