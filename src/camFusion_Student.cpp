@@ -183,12 +183,15 @@ void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bb
                 currentBboxID = currentBbox.boxID;
             }
         }
-        //TODO: Check if kp matches can be in multiple bboxes
+
         mmap.insert({currentBboxID, previousBboxID});
     }
 
+    //Hold memory of current best match of previous bbox ID. 
+    //Key = Current previous bbox ID used in a pair in bbBestMatches, value = Count used for this pair stored in bbBestMatches
+    map<int,int> processedPreviousBboxCount{}; 
 
-    //For each bboxID in the current frame, count how many occurence of a matched bbox ID in the previous frame we have.
+    //For each bboxID in the current frame, count how many occurences of a matched bbox ID in the previous frame we have.
     for(auto it = currFrame.boundingBoxes.begin(); it != currFrame.boundingBoxes.end(); ++it) {
 
         //Get the list of all elements for a specific current bbox ID. equal_range return a pair of iterators {beginning of range, end of range}
@@ -205,34 +208,48 @@ void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bb
             continue;
         }
 
+
         //First corresponds to a potential best match and second to its number of occurences in the multimap
-        set<pair<pair<int,int>, int>> countingResults = {}; //multimap<pair<int,int>,int>???
+        set<pair<pair<int,int>, int>> countingResults = {}; 
+
+        
         //Count occurences of each potential best match in the multimap
         for(auto potentialMatch : potentialMatches) {
 
             size_t counter = count_if(mmap.begin(), mmap.end(), [&potentialMatch](const pair<int,int>& p1) {return p1 == potentialMatch;});
             auto newCounterResult = make_pair(potentialMatch, counter);
-            countingResults.insert(newCounterResult); // => ZEMKNVOUIREBHERIÀ)JERBJER if same value, keep highest
+            countingResults.insert(newCounterResult); 
 
-            
         }
 
+        for(auto res : countingResults) cout << "{" << res.first.first << "," << res.first.second << "} " << res.second << endl;
+
         //Find the pair with the most occurences
-        auto bestMatch = max_element(countingResults.begin(), countingResults.end(), [] (const pair<pair<int,int>, int>& p1, const pair<pair<int,int>, int>& p2) {return p1.second < p2.second;});
-        cout << "1. Best match " << "{" << bestMatch->first.first << "," << bestMatch->first.second << "} " << bestMatch->second << endl;
-        
-        //Add it to the best matches
-        bbBestMatches.insert(make_pair(bestMatch->first.second, it->boxID));
+        auto potentialBestMatch = max_element(countingResults.begin(), countingResults.end(), [] (const pair<pair<int,int>, int>& p1, const pair<pair<int,int>, int>& p2) {return p1.second < p2.second;});
+        cout << "1. Best match " << "{" << potentialBestMatch->first.first << "," << potentialBestMatch->first.second << "} " << potentialBestMatch->second << endl;
+
+        //Check if we already processed a match using this previous bbox ID
+        auto processedPrevBboxIDit = processedPreviousBboxCount.find(potentialBestMatch->first.second);
+        if(processedPrevBboxIDit != processedPreviousBboxCount.end()) {
+            //The previousBboxID has aleady a match, check if the new one is better
+            if(potentialBestMatch->second > processedPrevBboxIDit->second) {
+                //A better match has been found, update processedPreviousBboxCount and bbBestMatches 
+                //cout << "Previous : " << processedPrevBboxIDit->second << "  new : " << potentialBestMatch->second << endl;
+                auto bbBestMatchesIt = bbBestMatches.find(potentialBestMatch->first.second);
+                if(bbBestMatchesIt != bbBestMatches.end()) bbBestMatchesIt->second = it->boxID;
+                processedPrevBboxIDit->second = potentialBestMatch->second;
+            }
+
+        }
+        else {
+            //This previousBboxID hasn't been processed yet, add it to bbBestMatches
+            processedPreviousBboxCount.insert(make_pair(potentialBestMatch->first.second, potentialBestMatch->second));
+            bbBestMatches.insert(make_pair(potentialBestMatch->first.second, it->boxID));
+        }
         
         
     }
 
-
-
-    
-    //for(auto res : countingResults) cout << "{" << res.first.first << "," << res.first.second << "} " << res.second << endl;
-    for(auto res : bbBestMatches) cout << "Best match {" << res.first << "," << res.second << "} " << endl;
-
-    
+    //for(auto res : bbBestMatches) cout << "Best match {" << res.first << "," << res.second << "} " << endl;
 
 }
