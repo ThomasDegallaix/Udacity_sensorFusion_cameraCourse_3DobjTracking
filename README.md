@@ -50,4 +50,6 @@ For explanations about how I solved this part, please check commentaries in the 
 #### Task :
 Compute the time-to-collision in second for all matched 3D objects using only Lidar measurements from the matched bounding boxes between current and previous frame. 
 
-To deal with outliers => use of methods from previous course about Lidar (create a cluster), other solution is to sort lidarpoints regarding their x coordiante and use the median point as point of reference for the obstacle => easier to implement but less precise.
+In order to deal with outliers that can lead to erroneous TTC estimation, I used a nearest neighboor method inspired from the Sensor fusion Lidar course with a distance threshold low enough to cluster the lidar points and remove the noisy points.
+
+[Go to code](https://github.com/ThomasDegallaix/Udacity_sensorFusion_cameraCourse_3DobjTracking/blob/master/src/camFusion_Student.cpp#L148-L192)
