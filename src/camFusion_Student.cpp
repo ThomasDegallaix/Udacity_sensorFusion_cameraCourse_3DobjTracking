@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <algorithm>
 #include <numeric>
@@ -146,13 +145,51 @@ void computeTTCCamera(std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPo
     // ...
 }
 
+void filterOutliers(vector<LidarPoint>& lidarPoints, float clusterTolerance, int minSize) {
+
+    //Convert Lidar points to pointcloud
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    for(auto p : lidarPoints) cloud->push_back(pcl::PointXYZ(p.x,p.y,p.z));
+
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
+    tree->setInputCloud(cloud);
+
+    vector<pcl::PointIndices> cluster_indices;
+
+    pcl::EuclideanClusterExtraction<pcl::PointXYZ> ec;
+    ec.setClusterTolerance(clusterTolerance);
+    ec.setMinClusterSize(minSize);
+    ec.setSearchMethod(tree);
+    ec.setInputCloud(cloud);
+    ec.extract(cluster_indices);
+
+    //We assume that there is only one cluster possible if we filter noise
+    lidarPoints.clear();
+    for(auto cluster : cluster_indices) {
+        for(auto index : cluster.indices) {
+            lidarPoints.push_back(LidarPoint{cloud->points.at(index).x,cloud->points.at(index).y,cloud->points.at(index).z});
+        }
+    }
+}
+
 
 void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
                      std::vector<LidarPoint> &lidarPointsCurr, double frameRate, double &TTC)
 {
-    // ...
-}
+    //Filter outliers using nearest neighboor method (clustering) with KD-tree data structure (Inspired from the sensor fusion Lidar course)
+    //Another way to remove outlier could be by  only using the median point regarding the x value after sorting the pointcloud
+    filterOutliers(lidarPointsCurr,0.05,5);
+    filterOutliers(lidarPointsPrev,0.05,5);
+    
+    double minXprev = 1e9;
+    double minXcurr = 1e9;
 
+    for(auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it) minXprev = minXprev > it->x ? it->x : minXprev;
+    for(auto it = lidarPointsCurr.begin(); it != lidarPointsCurr.end(); ++it) minXcurr = minXcurr > it->x ? it->x : minXcurr;
+
+    TTC = minXcurr * (1.0 / frameRate) / minXcurr - minXprev;
+    cout << "TTC : " << TTC << " sec" << endl;
+}
 
 void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bbBestMatches, DataFrame &prevFrame, DataFrame &currFrame)
 {
@@ -222,11 +259,9 @@ void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bb
 
         }
 
-        //for(auto res : countingResults) cout << "{" << res.first.first << "," << res.first.second << "} " << res.second << endl;
-
         //Find the pair with the most occurences
         auto potentialBestMatch = max_element(countingResults.begin(), countingResults.end(), [] (const pair<pair<int,int>, int>& p1, const pair<pair<int,int>, int>& p2) {return p1.second < p2.second;});
-        cout << "1. Best match " << "{" << potentialBestMatch->first.first << "," << potentialBestMatch->first.second << "} " << potentialBestMatch->second << endl;
+
 
         //Check if we already processed a match using this previous bbox ID
         auto processedPrevBboxIDit = processedPreviousBboxCount.find(potentialBestMatch->first.second);
@@ -234,7 +269,6 @@ void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bb
             //The previousBboxID has aleady a match, check if the new one is better
             if(potentialBestMatch->second > processedPrevBboxIDit->second) {
                 //A better match has been found, update processedPreviousBboxCount and bbBestMatches 
-                //cout << "Previous : " << processedPrevBboxIDit->second << "  new : " << potentialBestMatch->second << endl;
                 auto bbBestMatchesIt = bbBestMatches.find(potentialBestMatch->first.second);
                 if(bbBestMatchesIt != bbBestMatches.end()) bbBestMatchesIt->second = it->boxID;
                 processedPrevBboxIDit->second = potentialBestMatch->second;
@@ -245,11 +279,6 @@ void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bb
             //This previousBboxID hasn't been processed yet, add it to bbBestMatches
             processedPreviousBboxCount.insert(make_pair(potentialBestMatch->first.second, potentialBestMatch->second));
             bbBestMatches.insert(make_pair(potentialBestMatch->first.second, it->boxID));
-        }
-        
-        
+        }      
     }
-
-    //for(auto res : bbBestMatches) cout << "Best match {" << res.first << "," << res.second << "} " << endl;
-
 }

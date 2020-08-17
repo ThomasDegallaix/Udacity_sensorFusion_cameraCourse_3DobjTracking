@@ -2,10 +2,16 @@
 #ifndef camFusion_hpp
 #define camFusion_hpp
 
+#include <pcl/segmentation/extract_clusters.h>
+
 #include <stdio.h>
 #include <vector>
 #include <opencv2/core.hpp>
 #include "dataStructures.h"
+
+
+
+void filterOutliers(const std::vector<LidarPoint>& cloud, float clusterTolerance, int minsize);
 
 
 void clusterLidarWithROI(std::vector<BoundingBox> &boundingBoxes, std::vector<LidarPoint> &lidarPoints, float shrinkFactor, cv::Mat &P_rect_xx, cv::Mat &R_rect_xx, cv::Mat &RT);
