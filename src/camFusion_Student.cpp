@@ -134,7 +134,22 @@ void show3DObjects(std::vector<BoundingBox> &boundingBoxes, cv::Size worldSize, 
 // associate a given bounding box with the keypoints it contains
 void clusterKptMatchesWithROI(BoundingBox &boundingBox, std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPoint> &kptsCurr, std::vector<cv::DMatch> &kptMatches)
 {
-    // ...
+    vector<double> distances{};
+
+    for(auto match : kptMatches) {
+        if(boundingBox.roi.contains(kptsCurr.at(match.trainIdx).pt)){
+            boundingBox.kptMatches.push_back(match);
+            distances.push_back(match.distance);
+        } 
+    }
+
+    //Compute a mean of the euclidean distance of all the associated matches
+    double meanDistance = accumulate(distances.begin(), distances.end(), 0.0) / distances.size();
+
+    //Remove matches with euclidean distance above 150% or below 50% of the mean
+    boundingBox.kptMatches.erase(remove_if(boundingBox.kptMatches.begin(), boundingBox.kptMatches.end(), 
+        [meanDistance](const cv::DMatch& match){return match.distance < 0.5*meanDistance || match.distance > 1.5*meanDistance;}),
+        boundingBox.kptMatches.end());
 }
 
 

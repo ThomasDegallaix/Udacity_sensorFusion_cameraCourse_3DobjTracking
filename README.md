@@ -53,3 +53,8 @@ Compute the time-to-collision in second for all matched 3D objects using only Li
 In order to deal with outliers that can lead to erroneous TTC estimation, I used a nearest neighboor method inspired from the Sensor fusion Lidar course with a distance threshold low enough to cluster the lidar points and remove the noisy points.
 
 [Go to code](https://github.com/ThomasDegallaix/Udacity_sensorFusion_cameraCourse_3DobjTracking/blob/master/src/camFusion_Student.cpp#L148-L192)
+
+### FP.3 Associate Keypoint Correspondences with Bounding Boxes
+
+#### Task :
+Prepare the TTC computation based on camera measurements by associating keypoint correspondences to the bounding boxes which enclose them. All matches which satisfy this condition must be added to a vector in the respective bounding box.
