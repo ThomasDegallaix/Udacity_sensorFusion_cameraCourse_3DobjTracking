@@ -241,6 +241,7 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
 {
     //Filter outliers using nearest neighboor method (clustering) with KD-tree data structure (Inspired from the sensor fusion Lidar course)
     //Another way to remove outlier could be by  only using the median point regarding the x value after sorting the pointcloud
+
     filterOutliers(lidarPointsCurr,0.05,5);
     filterOutliers(lidarPointsPrev,0.05,5);
     
@@ -249,6 +250,9 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
 
     for(auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it) minXprev = minXprev > it->x ? it->x : minXprev;
     for(auto it = lidarPointsCurr.begin(); it != lidarPointsCurr.end(); ++it) minXcurr = minXcurr > it->x ? it->x : minXcurr;
+
+    cout << "minXprev : " << minXprev << endl;
+    cout << "minXcurr : " << minXcurr << endl;
 
     TTC = minXcurr * (1.0 / frameRate) / (minXprev - minXcurr);
     cout << "Lidar TTC : " << TTC << " sec" << endl;

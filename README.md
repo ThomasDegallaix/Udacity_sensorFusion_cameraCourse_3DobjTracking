@@ -69,3 +69,32 @@ In order to deal with outliers, I computed the mean of all the euclidean distanc
 Compute the time-to-collision in second for all matched 3D objects using only keypoint correspondences from the matched bounding boxes between current and previous frame.
 
 [Go to code](https://github.com/ThomasDegallaix/Udacity_sensorFusion_cameraCourse_3DobjTracking/blob/master/src/camFusion_Student.cpp#L158-L209)
+
+### FP.5 Performance Evaluation 1
+
+#### Task :
+Find examples where the TTC estimate of the Lidar sensor does not seem plausible. Describe your observations and provide a sound argumentation why you think this happened.
+
+
+We can look at the lidar TTC equation which is :    TTC = minXcurr * DT / (minXprev - minXcurr)
+with minXcurr being the closest point of the preceding vehicle to our vehicle in the current frame and minXprev the closest point but in the previous frame.
+
+By retrieving the value of minXprev and minXcurr for each frame we can find out that wrong estimations come from points in the current or in the previous frame that were not filtered correclty. Their value change slightly but the fact that minXprev and minXcurr are supposed to be relatively close to each other and that the TTC equation include a division by their substraction can lead to a TTC value far from the expectations.
+
+
+The first 2 samples are quiet good TTC estimations and the next 3 are erroneous.
+For the good estimations we have an average of 0.06 for (minXprev - minXcurr).
+and we can see that for bad estimations this value deviate slightly.
+
+Image               | Results
+--------------------| -------------------
+![l1](assets/img1.png) | minXprev - minXcurr = 7.974 - 7.913 = 0.061 
+![l2](assets/img2.png) | minXprev - minXcurr = 7.803 - 7.744 = 0.059
+![l2](assets/img3.png) | minXprev - minXcurr = 7.849 - 7.803 = 0.046
+![l2](assets/img4.png) | minXprev - minXcurr = 7.683 - 7.577 = 0.106
+![l2](assets/img5.png) | minXprev - minXcurr = 7.577 - 7.565 = 0.112
+
+### FP.6 Performance Evaluation 2
+
+#### Task :
+Run several detector / descriptor combinations and look at the differences in TTC estimation. Find out which methods perform best and also include several examples where camera-based TTC estimation is way off. As with Lidar, describe your observations again and also look into potential reasons.
