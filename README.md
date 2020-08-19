@@ -59,6 +59,11 @@ In order to deal with outliers that can lead to erroneous TTC estimation, I used
 #### Task :
 Prepare the TTC computation based on camera measurements by associating keypoint correspondences to the bounding boxes which enclose them. All matches which satisfy this condition must be added to a vector in the respective bounding box.
 
-In order to deal with outliers, I computed the mean of all the euclidean distances for the associated matches. Then, I removed matches with an euclidean distance below 50% or above 150% of the mean.
+In order to deal with outliers, I computed the mean of all the euclidean distances for the associated matches. Then, I added matches with an euclidean distance below a certain trheshold based on the mean.
 
-[Go to code] (https://github.com/ThomasDegallaix/Udacity_sensorFusion_cameraCourse_3DobjTracking/blob/master/src/camFusion_Student.cpp#L134-L153)
+[Go to code](https://github.com/ThomasDegallaix/Udacity_sensorFusion_cameraCourse_3DobjTracking/blob/master/src/camFusion_Student.cpp#L134-L153)
+
+### FP.4 Compute Camera-based TTC
+
+#### Task :
+Compute the time-to-collision in second for all matched 3D objects using only keypoint correspondences from the matched bounding boxes between current and previous frame.
