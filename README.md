@@ -92,7 +92,7 @@ Image               | Results
 ![l2](assets/img2.png) | minXprev - minXcurr = 7.803 - 7.744 = 0.059
 ![l2](assets/img3.png) | minXprev - minXcurr = 7.849 - 7.803 = 0.046
 ![l2](assets/img4.png) | minXprev - minXcurr = 7.683 - 7.577 = 0.106
-![l2](assets/img5.png) | minXprev - minXcurr = 7.577 - 7.565 = 0.112
+![l2](assets/img5.png) | minXprev - minXcurr = 7.577 - 7.565 = 0.012
 
 ### FP.6 Performance Evaluation 2
 
