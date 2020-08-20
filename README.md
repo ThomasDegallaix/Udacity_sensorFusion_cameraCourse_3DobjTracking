@@ -135,6 +135,6 @@ In order to evaluate the performance of each detector/descriptor combination reg
 |AKAZE        |SIFT           |1.249           |
 |SIFT         |BRIEF          |1.066           |
 
-<img src="assets/TTCgraph.png" width="600" height="400" />
+<img src="assets/TTCgraph.png"/>
 
 As we can see, the detector/descriptor combinations involving HARRIS or ORB as detector leads to very unreliable results. The other combinations give pretty good estimations compared with the lidar. Best results seem to be given by BRISK/SIFT and BRISK/BRIEF if we consider the lidar based TTC estimation reliable (which is not entirely the case as we have seen in the previous task. If we look manually frame by frame we can point out that the AKAZE/BRIEF combination seems to be pretty accurate and even better than with the lidar.). Here we do not give concerns about the processing speed and the accuracy of these combinations like in the mid term project.
