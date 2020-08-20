@@ -98,3 +98,43 @@ Image               | Results
 
 #### Task :
 Run several detector / descriptor combinations and look at the differences in TTC estimation. Find out which methods perform best and also include several examples where camera-based TTC estimation is way off. As with Lidar, describe your observations again and also look into potential reasons.
+
+In order to evaluate the performance of each detector/descriptor combination regarding the resulting TTC we compute the average TTC difference with the results given by the Lidar.
+
+|Detector type|Descriptor type|Average TTC diff|
+|-------------|---------------|----------------|
+|ORB          |SIFT           |inf             |
+|AKAZE        |BRISK          |1.662           |
+|AKAZE        |AKAZE          |0.88            |
+|AKAZE        |ORB            |1.591           |
+|BRISK        |BRISK          |0.965           |
+|ORB          |BRISK          |inf             |
+|FAST         |BRISK          |1.351           |
+|SIFT         |FREAK          |0.786           |
+|FAST         |ORB            |1.067           |
+|SHITOMASI    |BRISK          |0.898           |
+|SHITOMASI    |ORB            |1.118           |
+|FAST         |BRIEF          |1.255           |
+|BRISK        |SIFT           |1.367           |
+|BRISK        |BRIEF          |0.167           |
+|BRISK        |FREAK          |0.105           |
+|SIFT         |SIFT           |1.936           |
+|ORB          |ORB            |inf             |
+|FAST         |SIFT           |1.068           |
+|ORB          |BRIEF          |nan             |
+|SIFT         |BRISK          |0.939           |
+|AKAZE        |BRIEF          |1.628           |
+|HARRIS       |BRISK          |nan             |
+|BRISK        |ORB            |1.002           |
+|AKAZE        |FREAK          |1.586           |
+|SHITOMASI    |BRIEF          |1.596           |
+|SHITOMASI    |FREAK          |1.351           |
+|SHITOMASI    |SIFT           |1.382           |
+|ORB          |FREAK          |nan             |
+|FAST         |FREAK          |0.991           |
+|AKAZE        |SIFT           |1.249           |
+|SIFT         |BRIEF          |1.066           |
+
+<img src="assets/TTCgraph.png" width="600" height="400" />
+
+As we can see, the detector/descriptor combinations involving HARRIS or ORB as detector leads to very unreliable results. The other combinations give pretty good estimations compared with the lidar. Best results seem to be given by BRISK/SIFT and BRISK/BRIEF if we consider the lidar based TTC estimation reliable (which is not entirely the case as we have seen in the previous task. If we look manually frame by frame we can point out that the AKAZE/BRIEF combination seems to be pretty accurate and even better than with the lidar.). Here we do not give concerns about the processing speed and the accuracy of these combinations like in the mid term project.
